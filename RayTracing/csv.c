@@ -32,10 +32,6 @@ int next_c(FILE* csv) {
     if (c == '\n') {
         line++;;
     }
-    if (c == EOF) {
-        fprintf(stderr, "Error: next_c: Unexpected EOF: %d\n", line);
-        exit(1);
-    }
     return c;
 }
 
@@ -90,14 +86,17 @@ double* next_vector(FILE* csv) {
     lookfor(csv, '[');
     skipWS(csv);
     v[0] = next_number(csv);
+	printf("vector: %lf, ",v[0]);
     skipWS(csv);
     lookfor(csv, ',');
     skipWS(csv);
     v[1] = next_number(csv);
+	printf("%lf, ",v[1]);
     skipWS(csv);
     lookfor(csv, ',');
     skipWS(csv);
     v[2] = next_number(csv);
+	printf("%lf\n",v[2]);
     skipWS(csv);
     lookfor(csv, ']');
     return v;
@@ -113,14 +112,17 @@ double* next_color(FILE* csv, boolean is_rgb) {
     lookfor(csv, '[');
     skipWS(csv);
     v[0] = next_number(csv);
+	printf("vector %lf, ",v[0]);
     skipWS(csv);
     lookfor(csv, ',');
     skipWS(csv);
     v[1] = next_number(csv);
+	printf("%lf, ",v[1]);
     skipWS(csv);
     lookfor(csv, ',');
     skipWS(csv);
     v[2] = next_number(csv);
+	printf("%lf\n",v[2]);
     skipWS(csv);
     lookfor(csv, ']');
     // check that all values are valid
@@ -236,10 +238,12 @@ void read_scene(const char* filename) {
 		else if (strcmp(type, "sphere") == 0) {
 			object_type = SPH;
 			objects[object_counter].type = SPH;
+			//printf("type: %d \n",object_type);
 		}
 		else if (strcmp(type, "plane") == 0) {
 			object_type = PLAN;
 			objects[object_counter].type = PLAN;
+			//printf("type: %d \n",object_type);
 		}
 		else if (strcmp(type, "quadric") == 0) {
 			object_type = QUAD;
@@ -247,9 +251,10 @@ void read_scene(const char* filename) {
 		}
 		else if (strcmp(type, "light") == 0) {
 			object_type = LIG;
+			//printf("type: %d \n",object_type);
 		}
 		else {
-			exit(1);
+			break;
 		}
         lookfor(csv,',');   
         skipWS(csv);
@@ -257,6 +262,7 @@ void read_scene(const char* filename) {
             while (true) {
                 //  , }
                 char *property = next_string(csv);
+				printf("word %s \n",property);
                 if (strcmp(property, "width") == 0) {
 					if (object_type != CAM) {
 						fprintf(stderr, "Error: read_csv: Width cannot be set on this type: %d\n", line);
@@ -298,7 +304,7 @@ void read_scene(const char* filename) {
 					lookfor(csv,':');
 					skipWS(csv);
 					double temp = next_number(csv);
-					printf("radius %lf /n",temp);
+					printf("radius %lf \n",temp);
 					if (temp <= 0) {
 						fprintf(stderr, "Error: read_csv: radius must be positive: %d\n", line);
 						exit(1);
@@ -468,9 +474,6 @@ void read_scene(const char* filename) {
 					else if (object_type == LIG){
 						lights[light_counter].position = next_vector(csv);
 					}
-					else if (object_type == QUAD){
-						objects[object_counter].quadric.position = next_vector(csv);
-					}
 					else {
 						fprintf(stderr, "Error: read_csv: Position vector can't be applied here: %d\n", line);
 						exit(1);
@@ -478,17 +481,18 @@ void read_scene(const char* filename) {
 					skipWS(csv);
 					
 				}
-				else if (strcmp(property, "reflectivity") == 0) {
+				else if (strcmp(property, "reflextivity") == 0) {
 					lookfor(csv,':');
 					skipWS(csv);
 					if (object_type == SPH){
 						objects[object_counter].sphere.reflect = next_number(csv);
+						printf("%lf\n",objects[object_counter].sphere.reflect);
 					}
 					else if(object_type == PLAN){
 						objects[object_counter].plane.reflect = next_number(csv);
 					}
 					else if (object_type == QUAD){
-					 objects[object_counter].quadric.reflect = next_number(csv);
+						objects[object_counter].quadric.reflect = next_number(csv);
 					}
 					else{
 						fprintf(stderr, "Error: read_csv: Reflectivity can't be applied here: %d\n", line);
@@ -502,6 +506,7 @@ void read_scene(const char* filename) {
 					skipWS(csv);
 					if (object_type == SPH){
 						objects[object_counter].sphere.refract = next_number(csv);
+						printf("%lf\n",objects[object_counter].sphere.refract);
 					}
 					else if(object_type == PLAN){
 						objects[object_counter].plane.refract = next_number(csv);
@@ -521,9 +526,11 @@ void read_scene(const char* filename) {
 					skipWS(csv);
 					if (object_type == PLAN){
 						objects[object_counter].plane.ior = next_number(csv);
+						printf("%lf\n",objects[object_counter].plane.ior);
 					}
 					else if(object_type == SPH){
 						objects[object_counter].sphere.ior = next_number(csv);
+						printf("%lf\n",objects[object_counter].sphere.ior);
 					}
 					else if (object_type == QUAD){
 						objects[object_counter].quadric.ior = next_number(csv);
@@ -543,7 +550,7 @@ void read_scene(const char* filename) {
 						exit(1);
 					}
 					else{
-						objects[object_counter].plane.normal = next_color(csv,true);
+						objects[object_counter].plane.normal = next_vector(csv);
 					}
 					lookfor(csv,',');
 					skipWS(csv);

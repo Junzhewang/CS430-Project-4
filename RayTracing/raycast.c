@@ -289,13 +289,15 @@ void original_shade(Ray *ray, int object_index, Vector position, LIGHT *light, d
     Vector normal;
     Vector object_diff_color;
     Vector object_spec_color;
-    
+
     // find normal and color
     if (objects[object_index].type == PLAN) {
         Vector_copy(objects[object_index].plane.normal, normal);
         Vector_copy(objects[object_index].plane.diff_color, object_diff_color);
-        Vector_copy(objects[object_index].plane.spec_color, object_spec_color);
-    } else if (objects[object_index].type == SPH) {
+        //Vector_copy(objects[object_index].plane.spec_color, object_spec_color);
+    }
+    
+	else if (objects[object_index].type == SPH) {
         // find normal of our current intersection on the sphere
         Vector_sub(ray->origin, objects[object_index].sphere.position, normal);
         // copy the colors into temp variables
@@ -312,6 +314,7 @@ void original_shade(Ray *ray, int object_index, Vector position, LIGHT *light, d
         fprintf(stderr, "Error: shade: Trying to shade unsupported type of object\n");
         exit(1);
     }
+	
     normalize(normal);
     // find light, reflection and camera vectors
     Vector L;
@@ -346,6 +349,7 @@ void original_shade(Ray *ray, int object_index, Vector position, LIGHT *light, d
     color[0] += frad * fang * (specular_color[0] + diffuse_color[0]);
     color[1] += frad * fang * (specular_color[1] + diffuse_color[1]);
     color[2] += frad * fang * (specular_color[2] + diffuse_color[2]);
+	
 }
 /*==================================================================================================*/
 void recursive_shade(Ray *ray, int object_index, double t,double current_ior,int rec_level, Vector color) {
@@ -407,10 +411,10 @@ void recursive_shade(Ray *ray, int object_index, double t,double current_ior,int
     Vector_scale(ray_refracted.direction, 0.01, refracted_offset);
     Vector_add(ray_refracted.origin,refracted_offset , ray_refracted.origin);
     normalize(ray_refracted.direction);
-    
+
     get_best_solution(&ray_reflected,object_index, INFINITY, &best_reflection_object_index, &best_reflection_t);
     //get_best_solution(&ray_refracted,-1, INFINITY, &best_refraction_object_index, &best_refraction_t);
-    
+      
     if (objects[object_index].type == PLAN){
         get_best_solution(&ray_refracted, object_index, INFINITY, &best_refraction_object_index, &best_refraction_t);
     }
@@ -422,6 +426,7 @@ void recursive_shade(Ray *ray, int object_index, double t,double current_ior,int
         
     }
     else {
+		
         // we have an intersection, so we use recursively shade...
         Vector reflection_color ={0,0,0};
         Vector refraction_color ={0,0,0};
@@ -475,6 +480,7 @@ void recursive_shade(Ray *ray, int object_index, double t,double current_ior,int
         if (refract_coefficient == -1) {
             refract_coefficient = 0;
         }
+		
         if (fabs(reflect_coefficient) < 0.00001 && fabs(refract_coefficient) < 0.00001) {
             Vector_copy(background_color, color);
         }else{
@@ -494,6 +500,7 @@ void recursive_shade(Ray *ray, int object_index, double t,double current_ior,int
         free(refraction_light.direction);
         free(refraction_light.color);
     }
+	
     for (int i=0; i<num_lights; i++) {
         // find new ray direction
         int best_o;
@@ -507,16 +514,20 @@ void recursive_shade(Ray *ray, int object_index, double t,double current_ior,int
         get_best_solution(&new_ray, object_index, distance_to_light, &best_o, &best_t);
         
         if (best_o == -1) { // this means there was no object in the way between the current one and the light
-            original_shade(&new_ray, object_index, ray->direction, &lights[i], distance_to_light, color);
+           original_shade(&new_ray, object_index, ray->direction, &lights[i], distance_to_light, color);
         }
-        // there was an object in the way, so we don't do anything. It's shadow
+		
+        // there was an object in the way, so we don't do anything. It's 
+		
     }
+	
+
 }
 /*==================================================================================================*/
 
 void raycast_scene(Image *img, double cam_width, double cam_height, OBJECT *objects) {
 
-    Vector vp_pos = {0, 0, 1};   // view plane position
+    Vector vp_pos = {0, 0, -1};   // view plane position
    
     Vector point = {0, 0, 0};    // point on viewplane where intersection happens
     
